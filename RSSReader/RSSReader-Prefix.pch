@@ -1,0 +1,13 @@
+//
+//  RSSReader-Prefix.pch
+//  RSSReader
+//
+//  Created by kris on 3/26/17.
+//  Copyright © 2017 kris. All rights reserved.
+//
+
+#ifdef __OBJC__
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+#import <CoreData/CoreData.h>
+#endif

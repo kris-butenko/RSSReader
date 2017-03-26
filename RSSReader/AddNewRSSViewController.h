@@ -1,5 +1,5 @@
 //
-//  ViewController.h
+//  AddNewRSSViewController.h
 //  RSSReader
 //
 //  Created by kris on 3/26/17.
@@ -8,8 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ViewController : UIViewController
-
+@interface AddNewRSSViewController : UIViewController
 
 @end
-
