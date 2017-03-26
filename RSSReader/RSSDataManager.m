@@ -41,6 +41,23 @@
     if (self.fetchedResultsController.fetchedObjects.count == 0) {
         [self fillDB];
     }
+    
+    for(NSManagedObject *perObj in self.fetchedResultsController.fetchedObjects){
+        
+        NSSet *laps = [perObj valueForKey:@"feeds"];
+        
+
+       NSLog(@"Date of rem: %@", [perObj valueForKey:@"feeds"]);
+        
+    }
+              
+    for (RSSItem* item in self.fetchedResultsController.fetchedObjects)
+    {
+
+        item.feeds = [item valueForKey:@"feeds"];
+        for (FeedItem* feed in item.feeds )
+            NSLog(@"");
+    }
 }
 
 
@@ -176,7 +193,9 @@
                               initWithKey:@"updateDate" ascending:NO];
     [fetchRequest setSortDescriptors:[NSArray arrayWithObject:sort]];
     
-    [fetchRequest setFetchBatchSize:20];
+  //  [fetchRequest setFetchBatchSize:20];
+    
+    [fetchRequest setRelationshipKeyPathsForPrefetching:@[ @"feeds" ]];
     
     NSFetchedResultsController *theFetchedResultsController =
     [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
@@ -184,6 +203,14 @@
                                                    cacheName:@"Root"];
     self.fetchedResultsController = theFetchedResultsController;
     _fetchedResultsController.delegate = self;
+    
+    for (RSSItem* item in _fetchedResultsController.fetchedObjects)
+    {
+        NSLog(@"%@", item.feeds);
+        
+        for (FeedItem* feed in item.feeds )
+            NSLog(@"");
+    }
     
     return _fetchedResultsController;
     

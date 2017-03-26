@@ -12,5 +12,7 @@
 @interface RSSFeedViewController : UIViewController<UITableViewDelegate, UITableViewDataSource>
 
 @property (nonatomic, strong) RSSItem *rssItem;
+@property (nonatomic, strong) NSFetchedResultsController *fetchedResultsController;
+
 
 @end

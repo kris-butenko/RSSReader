@@ -16,7 +16,7 @@
 @property (nonatomic, retain) NSString*     link;
 @property (nonatomic, retain) NSString*     title;
 @property (nonatomic, retain) NSDate*       updateDate;
-@property (nonatomic, retain) NSMutableArray*      feeds;
+@property (nonatomic, retain) NSMutableSet*      feeds;
 
 @end
 
@@ -24,7 +24,7 @@
 
 - (void)addFeedsObject:(FeedItem *)value;
 - (void)removeFeedsObject:(FeedItem *)value;
-- (void)addFeeds:(NSArray *)values;
-- (void)removeFeeds:(NSArray *)values;
+- (void)addFeeds:(NSSet *)values;
+- (void)removeFeeds:(NSSet *)values;
 
 @end

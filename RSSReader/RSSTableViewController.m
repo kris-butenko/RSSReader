@@ -8,6 +8,7 @@
 
 #import "RSSTableViewController.h"
 #import "RSSItem.h"
+#import "FeedItem.h"
 #import "RSSDataManager.h"
 
 #import "RSSFeedViewController.h"
@@ -33,6 +34,14 @@
     
     if ([[self fetchedResultsController] performFetch:&error])
         [self.tableView reloadData];
+    
+    for (RSSItem* item in self.fetchedResultsController.fetchedObjects)
+    {
+        item.feeds = [item mutableSetValueForKey:@"feeds"];
+
+            NSLog(@"Chrono: %@   laps: %@", item.title, item.feeds);
+        
+    }
     
     self.title = @"RSS";
     
@@ -203,7 +212,9 @@
                               initWithKey:@"updateDate" ascending:NO];
     [fetchRequest setSortDescriptors:[NSArray arrayWithObject:sort]];
     
-    [fetchRequest setFetchBatchSize:20];
+   // [fetchRequest setFetchBatchSize:20];
+    
+    [fetchRequest setRelationshipKeyPathsForPrefetching:@[ @"feeds" ]];
     
     NSFetchedResultsController *theFetchedResultsController =
     [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
@@ -212,6 +223,13 @@
     _fetchedResultsController = theFetchedResultsController;
     _fetchedResultsController.delegate = self;
     
+    for (RSSItem* item in _fetchedResultsController.fetchedObjects)
+    {
+        NSLog(@"%@", item.feeds.allObjects);
+        
+        for (FeedItem* feed in item.feeds )
+            NSLog(@"");
+    }
     return _fetchedResultsController;
     
 }
