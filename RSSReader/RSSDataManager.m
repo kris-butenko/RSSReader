@@ -46,6 +46,7 @@
 
 - (void) fillDB {
 
+    //http://www.aweber.com/blog/feed/
     RSSItem *rssItem = [self saveNewRSSWithTitle: @"Apple News"
                                             link: @"http://images.apple.com/main/rss/hotnews/hotnews.rss"];
     [self updateRSS:rssItem];
@@ -60,8 +61,7 @@
     rssItem.title = name;
     rssItem.link = link;
     rssItem.updateDate = [NSDate date];
-    
-   // rssItem.feeds = [[NSArray alloc] init];
+
     
     NSError *error;
     if (![context save:&error]) {
@@ -122,13 +122,8 @@
         abort();
     }
 
-  
-   NSMutableArray *array = [[NSMutableArray alloc] init];//]WithArray:item.feeds];
+ 
     [item.feeds addObject:feed];
-    //item.feeds = array;
-    
-   // NSError *error = nil;
-    
     
     if (![context save:&error]) {
         NSLog(@"Core data error %@, %@", error, [error userInfo]);

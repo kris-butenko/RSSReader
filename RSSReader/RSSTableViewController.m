@@ -208,7 +208,7 @@
     NSFetchedResultsController *theFetchedResultsController =
     [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
                                         managedObjectContext:managedObjectContext sectionNameKeyPath:nil
-                                                   cacheName:nil];
+                                                   cacheName:@"Root"];
     _fetchedResultsController = theFetchedResultsController;
     _fetchedResultsController.delegate = self;
     

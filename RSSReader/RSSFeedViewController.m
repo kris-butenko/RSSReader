@@ -22,21 +22,13 @@
 @implementation RSSFeedViewController
 
 @synthesize rssItem = _rssItem;
-@synthesize fetchedResultsController = _fetchedResultsController;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
     self.rssEntries = [[NSMutableArray alloc] init];
-    
-    // Retrieve all tags
-  /*  NSError *error;
-    if (![self.fetchedResultsController performFetch:&error]) {
-        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-        abort();
-    }*/
-    
+
     // Each tag attached to the details is included in the array
     NSArray *feeds = self.rssItem.feeds;
     
@@ -92,41 +84,4 @@
     return cell;
 }
 
-#pragma mark - Result controller
-
-- (NSFetchedResultsController *)fetchedResultsController
-{
-    if (_fetchedResultsController != nil) {
-        return _fetchedResultsController;
-    }
-    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    
-    NSEntityDescription *entity = [NSEntityDescription
-                                   entityForName:@"FeedItem"
-                                   inManagedObjectContext:self.rssItem.managedObjectContext];
-    [fetchRequest setEntity:entity];
-    
-    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc]
-                                        initWithKey:@"published"
-                                        ascending:NO];
-    NSArray *sortDescriptors = [NSArray arrayWithObjects:sortDescriptor, nil];
-    [fetchRequest setSortDescriptors:sortDescriptors];
-    
-    NSFetchedResultsController *aFetchedResultsController = [[NSFetchedResultsController alloc]         initWithFetchRequest:fetchRequest
-        managedObjectContext:self.rssItem.managedObjectContext
-                                        sectionNameKeyPath:nil
-                                        cacheName:nil];
-    
-    self.fetchedResultsController = aFetchedResultsController;
-    
-    NSError *error = nil;
-    if (![self.fetchedResultsController performFetch:&error]) {
-        NSLog(@"Core data error %@, %@", error, [error userInfo]);
-        abort();
-    }
-    
-    self.rssEntries = _fetchedResultsController.fetchedObjects;
-    
-    return _fetchedResultsController;
-}
 @end
