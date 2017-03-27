@@ -17,7 +17,7 @@
 
 + (RSSDataManager*)shared;
 - (NSFetchedResultsController *)fetchedResultsController;
-- (void) firstFillDB;
+- (void) startRSS;
 
 -(RSSItem*)saveNewRSSWithTitle:(NSString*)name link:(NSString*)link;
 

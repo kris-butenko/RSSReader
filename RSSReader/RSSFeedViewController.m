@@ -8,6 +8,7 @@
 
 #import "RSSFeedViewController.h"
 #import "RSSFeedCell.h"
+#import "FeedDetailViewController.h"
 
 #import "FeedItem.h"
 #import "RSSItem.h"
@@ -24,34 +25,31 @@
 @synthesize rssItem = _rssItem;
 @synthesize fetchedResultsController = _fetchedResultsController;
 
-
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
     self.rssEntries = [[NSMutableArray alloc] init];
-
+    
     NSError *error;
-    if (![self.fetchedResultsController performFetch:&error]) {
-        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-        abort();
+    if ([[self fetchedResultsController] performFetch:&error])
+    {
+        [self.rssEntries addObjectsFromArray: [self fetchedResultsController].fetchedObjects];
+        [self.tableView reloadData];
     }
-    
-    // Each tag attached to the details is included in the array
-    NSSet *feeds = [self.rssItem valueForKey:@"feeds"] ;
-    
-    for (FeedItem *feed in feeds) {
-        [self.rssEntries addObject:feed];
-    }
-    
-    [self.tableView reloadData];
 }
 
+-(void) viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
+
 
 #pragma mark -
 #pragma mark Table view data source
@@ -72,10 +70,9 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-   // FeedItem *entry = [self.rssEntries objectAtIndex:indexPath.row];
-    FeedItem *entry = (FeedItem *)[self.fetchedResultsController objectAtIndexPath:indexPath];
+    //FeedItem *entry = (FeedItem *)[self.fetchedResultsController objectAtIndexPath:indexPath];
 
-    return [RSSFeedCell getCellHeight:entry];
+    return 87;// [RSSFeedCell getCellHeight:entry];
 }
 
 // Customize the appearance of table view cells.
@@ -91,43 +88,61 @@
     FeedItem *entry = [self.fetchedResultsController objectAtIndexPath:indexPath];
     
     cell.rssTitleLabel.text = entry.title;
-    cell.rssTextLabel.text = entry.content;
+    
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"EEE, dd MMM yyyy"];
+    cell.rssTextLabel.text = [dateFormatter stringFromDate: entry.published];
     
     return cell;
 }
 
-#pragma mark - Result controller
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    
+    FeedItem *entry = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle: nil];
+    FeedDetailViewController *detailViewController = [storyboard instantiateViewControllerWithIdentifier:@"FeedDetailViewController"];
+    
+    detailViewController.articleString = entry.content;
+    
+    [self.navigationController pushViewController:detailViewController animated:YES];
+}
 
-- (NSFetchedResultsController *)fetchedResultsController
-{
+
+#pragma mark - fetchedResultsController
+
+- (NSFetchedResultsController *)fetchedResultsController {
+    
     if (_fetchedResultsController != nil) {
         return _fetchedResultsController;
     }
-    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     
+    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     NSEntityDescription *entity = [NSEntityDescription
-                                   entityForName:@"FeedItem"
-                                   inManagedObjectContext:self.rssItem.managedObjectContext];
+                                   entityForName:@"FeedItem" inManagedObjectContext:self.rssItem.managedObjectContext];
     [fetchRequest setEntity:entity];
     
-    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc]
-                                        initWithKey:@"published"
-                                        ascending:NO];
-    NSArray *sortDescriptors = [NSArray arrayWithObjects:sortDescriptor, nil];
-    [fetchRequest setSortDescriptors:sortDescriptors];
+    NSSortDescriptor *sort = [[NSSortDescriptor alloc]
+                              initWithKey:@"published" ascending:NO];
+    [fetchRequest setSortDescriptors:[NSArray arrayWithObject:sort]];
     
-    NSFetchedResultsController *aFetchedResultsController = [[NSFetchedResultsController alloc]  initWithFetchRequest:fetchRequest
-                                                                                                 managedObjectContext:self.rssItem.managedObjectContext
-                                                                                                   sectionNameKeyPath:nil
-                                                                                                            cacheName:nil];
+    [fetchRequest setFetchBatchSize:20];
     
-    self.fetchedResultsController = aFetchedResultsController;
+    NSManagedObjectID *moID = [self.rssItem objectID];
+    NSString *uniqueStringKey = [moID.URIRepresentation.absoluteString lastPathComponent];
+    NSString *predicateString = [[NSString alloc] initWithFormat:@"(rssID = \"%@\")", uniqueStringKey];
     
-    NSError *error = nil;
-    if (![self.fetchedResultsController performFetch:&error]) {
-        NSLog(@"Core data error %@, %@", error, [error userInfo]);
-        abort();
-    }
+    NSPredicate *requestPredicate = [NSPredicate predicateWithFormat:predicateString];
+    [fetchRequest setPredicate:requestPredicate];
+    
+    NSFetchedResultsController *theFetchedResultsController =
+    [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
+                                        managedObjectContext:self.rssItem.managedObjectContext sectionNameKeyPath:nil
+                                                   cacheName:nil];
+    _fetchedResultsController = theFetchedResultsController;
+    _fetchedResultsController.delegate = self;
     
     return _fetchedResultsController;
 }

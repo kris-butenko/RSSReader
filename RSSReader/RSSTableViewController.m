@@ -35,14 +35,6 @@
     if ([[self fetchedResultsController] performFetch:&error])
         [self.tableView reloadData];
     
-    for (RSSItem* item in self.fetchedResultsController.fetchedObjects)
-    {
-        item.feeds = [item mutableSetValueForKey:@"feeds"];
-
-            NSLog(@"Chrono: %@   laps: %@", item.title, item.feeds);
-        
-    }
-    
     self.title = @"RSS";
     
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addRSS:)];
@@ -139,8 +131,6 @@
 }
 
 
-
-
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
     // The fetch controller is about to start sending change notifications, so prepare the table view for updates.
     [self.tableView beginUpdates];
@@ -212,10 +202,6 @@
                               initWithKey:@"updateDate" ascending:NO];
     [fetchRequest setSortDescriptors:[NSArray arrayWithObject:sort]];
     
-   // [fetchRequest setFetchBatchSize:20];
-    
-    [fetchRequest setRelationshipKeyPathsForPrefetching:@[ @"feeds" ]];
-    
     NSFetchedResultsController *theFetchedResultsController =
     [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
                                         managedObjectContext:managedObjectContext sectionNameKeyPath:nil
@@ -223,13 +209,6 @@
     _fetchedResultsController = theFetchedResultsController;
     _fetchedResultsController.delegate = self;
     
-    for (RSSItem* item in _fetchedResultsController.fetchedObjects)
-    {
-        NSLog(@"%@", item.feeds.allObjects);
-        
-        for (FeedItem* feed in item.feeds )
-            NSLog(@"");
-    }
     return _fetchedResultsController;
     
 }
