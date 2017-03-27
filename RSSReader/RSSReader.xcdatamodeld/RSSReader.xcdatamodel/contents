@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="11759" systemVersion="16C68" minimumToolsVersion="Automatic" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="11759" systemVersion="16B2657" minimumToolsVersion="Automatic" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
     <entity name="FeedItem" representedClassName="FeedItem" syncable="YES" codeGenerationType="class">
         <attribute name="content" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="published" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="rssID" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="title" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <entity name="RSSItem" representedClassName="RSSItem" syncable="YES" codeGenerationType="class">
         <attribute name="link" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="title" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="updateDate" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
-        <relationship name="feeds" transient="YES" toMany="YES" deletionRule="Nullify" destinationEntity="FeedItem" syncable="YES"/>
+        <relationship name="feeds" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="FeedItem" syncable="YES"/>
     </entity>
     <elements>
-        <element name="RSSItem" positionX="-36" positionY="-45" width="108" height="103"/>
-        <element name="FeedItem" positionX="207" positionY="36" width="128" height="88"/>
+        <element name="FeedItem" positionX="207" positionY="36" width="128" height="105"/>
+        <element name="RSSItem" positionX="-36" positionY="-45" width="108" height="105"/>
     </elements>
 </model>

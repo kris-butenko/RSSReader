@@ -29,7 +29,7 @@
     return sharedManager;
 }
 
-- (void) firstFillDB
+- (void) startRSS
 {
     NSError *error;
     if (![[self fetchedResultsController] performFetch:&error]) {
@@ -41,15 +41,27 @@
     if (self.fetchedResultsController.fetchedObjects.count == 0) {
         [self fillDB];
     }
+    else
+    {
+        for (RSSItem* item in self.fetchedResultsController.fetchedObjects)
+            [self updateRSS:item];
+    }
 }
-
 
 - (void) fillDB {
 
-    //http://www.aweber.com/blog/feed/
     RSSItem *rssItem = [self saveNewRSSWithTitle: @"Apple News"
                                             link: @"http://images.apple.com/main/rss/hotnews/hotnews.rss"];
+    
+    RSSItem *rssItem2 = [self saveNewRSSWithTitle: @"Aweber"
+                                            link: @"http://www.aweber.com/blog/feed/"];
+    
+    RSSItem *rssItem3 = [self saveNewRSSWithTitle: @"World"
+                                             link: @"http://rss.cnn.com/rss/edition_world.rss"];
+    
     [self updateRSS:rssItem];
+    [self updateRSS:rssItem2];
+    [self updateRSS:rssItem3];
 }
 
 -(RSSItem*)saveNewRSSWithTitle:(NSString*)name link:(NSString*)link
@@ -61,7 +73,6 @@
     rssItem.title = name;
     rssItem.link = link;
     rssItem.updateDate = [NSDate date];
-
     
     NSError *error;
     if (![context save:&error]) {
@@ -96,10 +107,6 @@
   
                                           for (NSDictionary* dict in itemsDict)
                                               [weakSelf saveNewFeed:dict forRSSItem:rssItem];
-                                          
-
-                                          
-                                        //  [weakSelf.fetchedResultsController performFetch:&error];
                                       }
                                   }];
 
@@ -108,23 +115,26 @@
 
 -(void)saveNewFeed:(NSDictionary*)feedDict forRSSItem:(RSSItem*)item
 {
+     if ( item.updateDate && ([feedDict[@"pubDate"] compare:item.updateDate] == NSOrderedAscending))
+         return;
+    
+         
     NSManagedObjectContext *context = item.managedObjectContext;//  [self managedObjectContext];
 
     FeedItem *feed = [NSEntityDescription insertNewObjectForEntityForName:@"FeedItem"
                                              inManagedObjectContext: context];
     feed.title = feedDict[@"title"];
     feed.content = feedDict[@"description"];
-    feed.published = [NSDate date];// feedDict[@"pubDate"];
+    feed.published = feedDict[@"pubDate"];
+    
+    NSManagedObjectID *moID = [item objectID];
+    NSString *uniqueStringKey = [moID.URIRepresentation.absoluteString lastPathComponent];
+    feed.rssID = uniqueStringKey;
+    
+    if ( !item.updateDate || [feedDict[@"pubDate"] compare:item.updateDate] == NSOrderedDescending)
+        item.updateDate = feedDict[@"pubDate"];
     
     NSError *error = nil;
-    if (![context save:&error]) {
-        NSLog(@"Core data error %@, %@", error, [error userInfo]);
-        abort();
-    }
-
- 
-    [item.feeds addObject:feed];
-    
     if (![context save:&error]) {
         NSLog(@"Core data error %@, %@", error, [error userInfo]);
         abort();
@@ -141,19 +151,21 @@
         NSArray *items = [channel elementsForName:@"item"];
         for (GDataXMLElement *item in items) {
             
-            NSString *articleTitle = [item valueForChild:@"title"];
-            NSString *articleText = [item valueForChild:@"description"];
-            NSString *dateString = [item valueForChild:@"pubDate"];
+            NSString *articleTitle = [item valueForChild:@"title"] ?: @"";
+            NSString *articleText = [item valueForChild:@"description"] ?: @"";
+            NSString *dateString = [item valueForChild:@"pubDate"] ?: @"";
             
             NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-            [dateFormatter setDateFormat:@"MMM, dd MMM yyyy HH:mm:ss aaa"];
+            [dateFormatter setDateFormat:@"EEE, dd MMM yyyy HH:mm:ss Z"];
             NSDate *dateFromString = [[NSDate alloc] init];
-//E, d MMM yyyy HH:mm:ss Z
             
+            NSLocale *enUSPOSIXLocale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"];
+            [dateFormatter setLocale:enUSPOSIXLocale];
             
-            dateFromString = [dateFormatter dateFromString:dateString];
+            dateFromString = [dateFormatter dateFromString:[dateString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+           // dateFromString = (dateFromString ?: );
             
-            [feeds addObject: @{@"title": articleTitle, @"description": articleText, @"pubDate": dateString}];
+            [feeds addObject: @{@"title": articleTitle, @"description": articleText, @"pubDate": dateFromString}];
         }
     }
     return feeds;

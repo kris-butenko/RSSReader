@@ -22,23 +22,29 @@
 @implementation RSSFeedViewController
 
 @synthesize rssItem = _rssItem;
+@synthesize fetchedResultsController = _fetchedResultsController;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    self.rssEntries = [[NSMutableArray alloc] init];
 
-    // Each tag attached to the details is included in the array
-    NSArray *feeds = self.rssItem.feeds;
-    
-    for (FeedItem *feed in feeds) {
-        [self.rssEntries addObject:feed];
-    }
-    
-    [self.tableView reloadData];
 }
 
+-(void) viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    
+    self.rssEntries = [[NSMutableArray alloc] init];
+            [self.tableView reloadData];
+    
+    NSError *error;
+    if ([[self fetchedResultsController] performFetch:&error])
+    {
+        [self.rssEntries addObjectsFromArray: [self fetchedResultsController].fetchedObjects];
+        [self.tableView reloadData];
+    }
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
@@ -82,6 +88,43 @@
     cell.rssTextLabel.text = entry.content;
     
     return cell;
+}
+
+#pragma mark - fetchedResultsController
+
+- (NSFetchedResultsController *)fetchedResultsController {
+    
+    if (_fetchedResultsController != nil) {
+        return _fetchedResultsController;
+    }
+    
+    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+    NSEntityDescription *entity = [NSEntityDescription
+                                   entityForName:@"FeedItem" inManagedObjectContext:self.rssItem.managedObjectContext];
+    [fetchRequest setEntity:entity];
+    
+    NSSortDescriptor *sort = [[NSSortDescriptor alloc]
+                              initWithKey:@"published" ascending:NO];
+    [fetchRequest setSortDescriptors:[NSArray arrayWithObject:sort]];
+    
+    [fetchRequest setFetchBatchSize:20];
+    
+    NSManagedObjectID *moID = [self.rssItem objectID];
+    NSString *uniqueStringKey = [moID.URIRepresentation.absoluteString lastPathComponent];
+    NSString *predicateString = [[NSString alloc] initWithFormat:@"(rssID = \"%@\")", uniqueStringKey];
+    
+    NSPredicate *requestPredicate = [NSPredicate predicateWithFormat:predicateString];
+    [fetchRequest setPredicate:requestPredicate];
+    
+    NSFetchedResultsController *theFetchedResultsController =
+    [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
+                                        managedObjectContext:self.rssItem.managedObjectContext sectionNameKeyPath:nil
+                                                   cacheName:nil];
+    _fetchedResultsController = theFetchedResultsController;
+    _fetchedResultsController.delegate = self;
+    
+    return _fetchedResultsController;
+    
 }
 
 @end

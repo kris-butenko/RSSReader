@@ -10,6 +10,7 @@
 
 @implementation FeedItem
 
+@dynamic rssID;
 @dynamic title;
 @dynamic content;
 @dynamic published;

@@ -31,7 +31,7 @@
     controller.managedObjectContext = self.managedObjectContext;
     
     [RSSDataManager shared].managedObjectContext = self.managedObjectContext;
-    [[RSSDataManager shared] firstFillDB];
+    [[RSSDataManager shared] startRSS];
     
     return YES;
 }
